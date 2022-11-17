@@ -22,8 +22,10 @@ class _ReceiptHomeScreenState extends State<ReceiptHomeScreen> {
     return ChangeNotifierProvider<ReceiptManager>(
       create: (context)=> ReceiptManager(),
       child: MaterialApp(
+
         debugShowCheckedModeBanner: false,
         home: Scaffold(
+          resizeToAvoidBottomInset: false,
           body: SafeArea(
               child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),

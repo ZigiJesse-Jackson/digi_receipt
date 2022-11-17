@@ -6,12 +6,10 @@ class ReceiptBanner extends StatelessWidget {
   final String vendor_name;
   final String vendor_location;
   final String vendor_number;
-  final String vendor_mail;
   const ReceiptBanner({
     Key? key,
     required this.vendor_name,
     this.vendor_location = "",
-    this.vendor_mail = "",
     this.vendor_number = "",
   }) : super(key: key);
 
@@ -24,7 +22,7 @@ class ReceiptBanner extends StatelessWidget {
         color: Colors.black38,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(8.0),
         child: Center(
           child: Column(
             children: [
@@ -39,7 +37,7 @@ class ReceiptBanner extends StatelessWidget {
               ),
               Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 50, vertical: 8),
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 8),
                 child: Flex(
                   direction: Axis.horizontal,
                   children: [
@@ -48,7 +46,7 @@ class ReceiptBanner extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.only(bottom: 5),
                             child: Text(
                               vendor_name,
                               style: kCompanyNameStyle,
@@ -62,11 +60,6 @@ class ReceiptBanner extends StatelessWidget {
                           ),
                           Text(
                             vendor_number,
-                            style: kCompanyInfoStyle,
-                            textAlign: TextAlign.center,
-                          ),
-                          Text(
-                            vendor_mail,
                             style: kCompanyInfoStyle,
                             textAlign: TextAlign.center,
                           ),

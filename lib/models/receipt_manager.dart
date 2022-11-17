@@ -23,6 +23,7 @@ class ReceiptManager with ChangeNotifier{
         // parsing and creating receipt objects
         receipt_list.forEach((Map<String, Object?> rec_row) async {
             List<Product> products = [];
+            List<String> tags = [];
             // reading receipt products from db
             List<Map> product_list = await db.rawQuery('SELECT product.product_id as pid,'
                 ' product_name, product_price, quantity from product, receipt_product'
@@ -37,6 +38,15 @@ class ReceiptManager with ChangeNotifier{
                     prod_row['quantity']);
                 products.add(p);
             });
+
+            List<Map> tag_list = await db.rawQuery('''SELECT tag_name from tag, receipt_tag
+             WHERE receipt_tag.receipt_id = ${rec_row['receipt_id']} ''');
+            tag_list.forEach(( Map<dynamic, dynamic> tag_row) {
+                String tag = tag_row['tag_name'];
+                tags.add(tag);
+            });
+
+
             // initializing and adding receipts to receipt manager
 
             // converting timestamp to date
@@ -51,7 +61,9 @@ class ReceiptManager with ChangeNotifier{
                 receipt_date,
                 rec_row['receipt_total'] as double,
                 products,
-                []) );
+                tags,
+                notifyListeners
+            ) );
             notifyListeners();
         });
     }

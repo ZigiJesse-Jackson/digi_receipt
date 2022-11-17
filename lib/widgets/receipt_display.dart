@@ -18,7 +18,7 @@ class ReceiptDisplay extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Divider(
+        const Divider(
           thickness: 2,
         ),
         Row(
@@ -28,8 +28,8 @@ class ReceiptDisplay extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "${receipt.vendor_name}",
-                  style: TextStyle(
+                  receipt.vendor_name,
+                  style: const TextStyle(
                       fontSize: 17,
                       color: Colors.black45,
                       letterSpacing: 1.5,
@@ -37,33 +37,33 @@ class ReceiptDisplay extends StatelessWidget {
                 ),
                 Text(
                   DateFormat('yMMMMd').add_Hm().format(receipt.purchase_time),
-                  style: TextStyle(fontSize: 13, color: Colors.black38),
+                  style: const TextStyle(fontSize: 13, color: Colors.black38),
                 ),
               ],
             ),
             TextButton(onPressed: () {
               Navigator.push(context, MaterialPageRoute(builder: (context)=>ReceiptScreen(receipt: receipt)));
-            }, child: Text("View More")),
+            }, child: const Text("View More")),
           ],
         ),
         Row(
           children: [
-            Text(
+            const Text(
               "Tags",
               style: TextStyle(
                 fontSize: 13,
                 color: Colors.black38,
               ),
             ),
-            SizedBox(
+            const SizedBox(
               width: 15,
             ),
             Expanded(
-              child: Container(
+              child: SizedBox(
                 height: 23,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
-                  children: [for( var tag_name in receipt.tags) Tag(tag_name: tag_name)],
+                  children: [for( var tagName in receipt.tags) Tag(tag_name: tagName)],
                 ),
               ),
             ),
@@ -74,7 +74,7 @@ class ReceiptDisplay extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 "Total",
                 style: TextStyle(
                   fontSize: 13,
@@ -92,7 +92,7 @@ class ReceiptDisplay extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
-            children: [
+            children: const [
               Icon(
                 Icons.share,
                 color: Colors.black38,
