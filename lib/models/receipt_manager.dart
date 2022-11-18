@@ -25,26 +25,26 @@ class ReceiptManager with ChangeNotifier{
             List<Product> products = [];
             List<String> tags = [];
             // reading receipt products from db
-            List<Map> product_list = await db.rawQuery('SELECT product.product_id as pid,'
+            List<Map> productList = await db.rawQuery('SELECT product.product_id as pid,'
                 ' product_name, product_price, quantity from product, receipt_product'
                 ' where receipt_product.receipt_id = ${rec_row['receipt_id']}  and '
                 'product.product_id = receipt_product.product_id;');
 
             // parsing and creating list of receipt product objects
-            product_list.forEach((Map<dynamic, dynamic> prod_row) {
-                Product p = Product(prod_row['pid'],
-                    prod_row['product_name'],
-                    prod_row['product_price'],
-                    prod_row['quantity']);
+            for (var prodRow in productList) {
+                Product p = Product(prodRow['pid'],
+                    prodRow['product_name'],
+                    prodRow['product_price'],
+                    prodRow['quantity']);
                 products.add(p);
-            });
+            }
 
-            List<Map> tag_list = await db.rawQuery('''SELECT tag_name from tag, receipt_tag
+            List<Map> tagList = await db.rawQuery('''SELECT tag_name from tag, receipt_tag
              WHERE receipt_tag.receipt_id = ${rec_row['receipt_id']} ''');
-            tag_list.forEach(( Map<dynamic, dynamic> tag_row) {
-                String tag = tag_row['tag_name'];
+            for (var tagRow in tagList) {
+                String tag = tagRow['tag_name'];
                 tags.add(tag);
-            });
+            }
 
 
             // initializing and adding receipts to receipt manager

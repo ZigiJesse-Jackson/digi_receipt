@@ -27,29 +27,42 @@ class ReceiptModel {
     double get total => _total;
     UnmodifiableListView<Product> get items => UnmodifiableListView(_products);
     
-    Future<bool> addTag(String tag_name)async{
-        String k_path = await getDBPath();
-        Database db = await openDatabase(k_path);
-        List<Map<String, Object?>> tag_row = await db.rawQuery('''SELECT COUNT(tag_name) as tags from tag WHERE tag_name ='${tag_name.replaceAll("'", "''")}' ''');
-        if(tag_row[0]['tags']!=0)return false;
-        int tag_id = await db.rawInsert('''INSERT INTO tag (tag_name) VALUES ('${tag_name.replaceAll("'", "''")}'); ''');
-        print("Tag id in table is:${tag_id}");
-        await db.rawInsert('''INSERT INTO receipt_tag (receipt_id, tag_id) VALUES (${receipt_id},${tag_id})''');
+    Future<bool> addTag(String tagName)async{
+        String kPath = await getDBPath();
+        Database db = await openDatabase(kPath);
+        List<Map<String, Object?>> tagRow = await db.rawQuery('''SELECT COUNT(tag_name) as tags from tag WHERE tag_name ='${tagName.replaceAll("'", "''")}' ''');
+        if(tagRow[0]['tags']!=0)return false;
+        int tagId = await db.rawInsert('''INSERT INTO tag (tag_name) VALUES ('${tagName.replaceAll("'", "''")}'); ''');
+        print("Tag id in table is:${tagId}");
+        await db.rawInsert('''INSERT INTO receipt_tag (receipt_id, tag_id) VALUES (${receipt_id},${tagId})''');
         await db.close();
-        tags.add(tag_name);
+        tags.add(tagName);
         notify();
+
         return true;
     }
 
-    void removeTag(String tag_name)async{
-        String k_path = await getDBPath();
-        Database db = await openDatabase(k_path);
+    Future<void> removeTag(String tagName)async{
+        String kPath = await getDBPath();
+        Database db = await openDatabase(kPath);
 
-        List<Map<String, Object?>> tag_row = await db.rawQuery('''SELECT tag_id FROM tag WHERE tag_name = '$tag_name') LIMIT 1''');
-        int tag_id = tag_row[0]['tag_id'] as int;
-        await db.rawDelete('''DELETE FROM receipt_tag WHERE receipt_id = ${receipt_id} AND tag_id = ${tag_id}''');
-        await db.rawDelete('''DELETE FROM tag WHERE tag_id = ${tag_id}''');
-        tags.remove(tag_name);
+        List<Map<String, Object?>> tagRow = await db.rawQuery('''SELECT tag_id FROM tag WHERE tag_name = '${tagName.replaceAll("'", "''")}'; LIMIT 1''');
+        int tagId = tagRow[0]['tag_id'] as int;
+        await db.rawDelete('''DELETE FROM receipt_tag WHERE receipt_id = ${receipt_id} AND tag_id = ${tagId}''');
+        await db.rawDelete('''DELETE FROM tag WHERE tag_id = ${tagId}''');
+        tags.remove(tagName);
+        notify();
+    }
+    Future<void> removeAllTags()async{
+        String kPath = await getDBPath();
+        Database db = await openDatabase(kPath);
+
+        List<Map<String, Object?>> tagRow = await db.rawQuery('''SELECT tag_id FROM receipt_tag WHERE receipt_id = $_receipt_id;''');
+        for (var row in tagRow) {
+            await db.rawDelete('''DELETE FROM tag WHERE tag_id = ${row['tag_id']};''');
+        }
+        await db.rawDelete('''DELETE FROM receipt_tag WHERE receipt_id = $receipt_id;''');
+        tags = [];
         notify();
     }
 

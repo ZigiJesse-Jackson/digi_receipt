@@ -60,10 +60,10 @@ class ReceiptDisplay extends StatelessWidget {
             ),
             Expanded(
               child: SizedBox(
-                height: 23,
+                height: 35,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
-                  children: [for( var tagName in receipt.tags) Tag(tag_name: tagName)],
+                  children: [for( var tagName in receipt.tags) Tag(tag_name: tagName, onDeleted: receipt.removeTag,)],
                 ),
               ),
             ),

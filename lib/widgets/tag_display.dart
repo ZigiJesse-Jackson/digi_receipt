@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 
 class TagsDisplay extends StatefulWidget {
   List<String> tags;
+  Function onDelete;
   TagsDisplay({
     Key? key,
     required this.tags,
+    required this.onDelete
   }) : super(key: key);
 
   @override
@@ -20,14 +22,14 @@ class _TagsDisplayState extends State<TagsDisplay> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
 
-        Text(widget.tags.length == 0?"":"Tags", style: kTotalStyle,),
+        Text(widget.tags.isEmpty?"":"Tags", style: kTotalStyle,),
         const SizedBox(width: 25,),
         Expanded(
-          child: Container(
-            height: 23,
+          child: SizedBox(
+            height: 35,
             child: ListView(
               scrollDirection: Axis.horizontal,
-              children: [for(String tag_name in widget.tags) Tag(tag_name: tag_name)],
+              children: [for(String tagName in widget.tags) Tag(tag_name: tagName, onDeleted: widget.onDelete,)],
             ),
           ),
         )
