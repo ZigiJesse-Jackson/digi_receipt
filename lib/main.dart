@@ -1,4 +1,5 @@
 import 'package:digi_receipt/models/receipt_manager.dart';
+import 'package:digi_receipt/pages/search_screen.dart';
 import 'package:digi_receipt/widgets/receipt_display.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -16,13 +17,12 @@ class ReceiptHomeScreen extends StatefulWidget {
 }
 
 class _ReceiptHomeScreenState extends State<ReceiptHomeScreen> {
-
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<ReceiptManager>(
-      create: (context)=> ReceiptManager(),
+      create: (context) => ReceiptManager(),
       child: MaterialApp(
-
+        theme: ThemeData(fontFamily: 'Nunito'),
         debugShowCheckedModeBanner: false,
         home: Scaffold(
           resizeToAvoidBottomInset: false,
@@ -51,22 +51,56 @@ class _ReceiptHomeScreenState extends State<ReceiptHomeScreen> {
                           style: TextStyle(color: Colors.black38),
                         ),
                       ),
-                      Divider(
-                        thickness: 3,
-                      ),
                     ],
                   ),
+                ),
+                const Divider(
+                  thickness: 3,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Consumer(
+                        builder: (context, ReceiptManager rManager, child) {
+                          return IconButton(
+                            onPressed: () {
+                              rManager.productsInRange(4, 20);
+                            },
+                            icon: const Icon(
+                              Icons.filter_list_rounded,
+                              color: Colors.blueGrey,
+                            ),
+                          );
+                        }),
+
+                    Consumer(
+                        builder: (context, ReceiptManager rManager, child) {
+                      return IconButton(
+                        onPressed: () {
+                          showSearch(
+                              context: context,
+                              delegate: CustomSearchReceiptClass(
+                                  receiptMgr: rManager));
+                        },
+                        icon: const Icon(
+                          Icons.search_rounded,
+                          color: Colors.blueGrey,
+                        ),
+                      );
+                    }),
+                  ],
                 ),
                 Expanded(
                   child: Consumer(
                       builder: (context, ReceiptManager rManager, child) {
-                        return ListView.builder(itemBuilder: (context, index){
-                          return ReceiptDisplay(
-                          receipt: rManager.receipts[index]);
-                        },
-                        itemCount: rManager.length,);
-
-                      }),
+                    return ListView.builder(
+                      itemBuilder: (context, index) {
+                        return ReceiptDisplay(
+                            receipt: rManager.receipts[index]);
+                      },
+                      itemCount: rManager.length,
+                    );
+                  }),
                 ),
               ],
             ),

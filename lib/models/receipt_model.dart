@@ -66,5 +66,27 @@ class ReceiptModel {
         notify();
     }
 
+    bool searchTag(String query){
+        for(var tag in tags){
+            if(tag.contains(query))return true;
+        }
+        return false;
+    }
+
+    bool searchProduct(String query){
+        for(var product in _products){
+            if(product.product_name.contains(query))return true;
+        }
+        return false;
+    }
+
+     List<Product> productInRange(double low, double high){
+        List<Product> products = [];
+        for(var product in _products){
+            double price = product.product_price;
+            if(high >= price && price >= low ) products.add(product);
+        }
+        return products;
+    }
 
 }

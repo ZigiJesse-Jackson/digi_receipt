@@ -119,10 +119,8 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(fontFamily: 'Nunito'),
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
+
+    return Scaffold(
         resizeToAvoidBottomInset: false,
         body: SafeArea(
           child: Padding(
@@ -252,7 +250,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
             ),
           ),
         ),
-      ),
-    );
+      );
+
   }
 }

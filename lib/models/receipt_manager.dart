@@ -11,7 +11,6 @@ class ReceiptManager with ChangeNotifier{
     late List<ReceiptModel> receipts =[];
     ReceiptManager(){
         readFromDB();
-
     }
     int get length => receipts.length;
 
@@ -66,6 +65,39 @@ class ReceiptManager with ChangeNotifier{
             ) );
             notifyListeners();
         });
+    }
+
+    /// Adds all receipts where [query] appears in tags, product names,
+    /// vendor name or vendor address
+    List<ReceiptModel> searchReceipt(String query){
+        List<ReceiptModel> results = [];
+        for(var receipt in receipts){
+            if( receipt.searchTag(query) || receipt.searchProduct(query) ||
+             receipt.vendor_name.contains(query) || receipt.vendor_address.contains(query)){
+                results.add(receipt);
+            }
+        }
+        return results;
+    }
+
+    List<Product> productsInRange(double low, double high){
+        List<Product> products = [];
+        for(var receipt in receipts){
+            products+= receipt.productInRange(low, high);
+        }
+        if(products.isNotEmpty)print(products[0].product_price);
+        return products;
+    }
+
+    List<ReceiptModel> receiptsInDateRange(DateTime from, DateTime to){
+        List<ReceiptModel> receiptsInRange = [];
+        for(var receipt in receipts){
+            DateTime receiptPurchaseTime = receipt.purchase_time;
+            if(receiptPurchaseTime.isBefore(to) && receiptPurchaseTime.isAfter(from)){
+                receiptsInRange.add(receipt);
+            }
+        }
+        return receiptsInRange;
     }
 
 }
