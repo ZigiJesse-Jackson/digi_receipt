@@ -68,14 +68,14 @@ class ReceiptModel {
 
     bool searchTag(String query){
         for(var tag in tags){
-            if(tag.contains(query))return true;
+            if(tag.toLowerCase().contains(query.toLowerCase()))return true;
         }
         return false;
     }
 
     bool searchProduct(String query){
         for(var product in _products){
-            if(product.product_name.contains(query))return true;
+            if(product.product_name.toLowerCase().contains(query.toLowerCase()))return true;
         }
         return false;
     }
@@ -87,6 +87,12 @@ class ReceiptModel {
             if(high >= price && price >= low ) products.add(product);
         }
         return products;
+    }
+
+    List<ReceiptModel> receiptTotalInRange(double low, double high){
+        List<ReceiptModel> receiptsInRange = [];
+
+        return receiptsInRange;
     }
 
 }

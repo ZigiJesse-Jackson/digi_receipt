@@ -43,20 +43,21 @@ class CustomSearchReceiptClass extends SearchDelegate {
     if(query.isEmpty) {
       searchResult = [];
     } else {
+      print(query);
       searchResult = receiptMgr.searchReceipt(query);
     }
 
 // view a list view with the search result
     return Container(
       margin: const EdgeInsets.all(20),
-      child: ListView(
+      child: searchResult.isNotEmpty? ListView(
           padding: const EdgeInsets.only(top: 8, bottom: 8),
           scrollDirection: Axis.vertical,
           children: List.generate(searchResult.length, (index) {
             return ReceiptDisplay(
               receipt: searchResult[index],
             );
-          })),
+          })):Center(child: Text("No results found"),),
     );
   }
 

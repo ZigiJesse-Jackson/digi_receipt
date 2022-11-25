@@ -73,7 +73,7 @@ class ReceiptManager with ChangeNotifier{
         List<ReceiptModel> results = [];
         for(var receipt in receipts){
             if( receipt.searchTag(query) || receipt.searchProduct(query) ||
-             receipt.vendor_name.contains(query) || receipt.vendor_address.contains(query)){
+             receipt.vendor_name.toLowerCase().contains(query.toLowerCase()) || receipt.vendor_address.toLowerCase().contains(query.toLowerCase())){
                 results.add(receipt);
             }
         }
@@ -85,7 +85,6 @@ class ReceiptManager with ChangeNotifier{
         for(var receipt in receipts){
             products+= receipt.productInRange(low, high);
         }
-        if(products.isNotEmpty)print(products[0].product_price);
         return products;
     }
 

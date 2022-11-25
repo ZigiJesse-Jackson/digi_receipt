@@ -1,4 +1,5 @@
 import 'package:digi_receipt/models/receipt_manager.dart';
+import 'package:digi_receipt/pages/filter_page.dart';
 import 'package:digi_receipt/pages/search_screen.dart';
 import 'package:digi_receipt/widgets/receipt_display.dart';
 import 'package:flutter/material.dart';
@@ -62,17 +63,19 @@ class _ReceiptHomeScreenState extends State<ReceiptHomeScreen> {
                   children: [
                     Consumer(
                         builder: (context, ReceiptManager rManager, child) {
-                          return IconButton(
-                            onPressed: () {
-                              rManager.productsInRange(4, 20);
-                            },
-                            icon: const Icon(
-                              Icons.filter_list_rounded,
-                              color: Colors.blueGrey,
-                            ),
-                          );
-                        }),
-
+                      return IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => FilterPage()));
+                        },
+                        icon: const Icon(
+                          Icons.filter_list_rounded,
+                          color: Colors.blueGrey,
+                        ),
+                      );
+                    }),
                     Consumer(
                         builder: (context, ReceiptManager rManager, child) {
                       return IconButton(
