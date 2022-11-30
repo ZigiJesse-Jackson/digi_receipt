@@ -68,7 +68,7 @@ class _ReceiptHomeScreenState extends State<ReceiptHomeScreen> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => FilterPage()));
+                                  builder: (context) => FilterPage(receipts: rManager.receipts)));
                         },
                         icon: const Icon(
                           Icons.filter_list_rounded,

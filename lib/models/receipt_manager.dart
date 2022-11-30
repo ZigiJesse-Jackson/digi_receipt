@@ -69,7 +69,8 @@ class ReceiptManager with ChangeNotifier{
 
     /// Adds all receipts where [query] appears in tags, product names,
     /// vendor name or vendor address
-    List<ReceiptModel> searchReceipt(String query){
+    static List<ReceiptModel> searchReceipt(List<ReceiptModel> receipts, String? query){
+        if(query==null || query.isEmpty) return receipts;
         List<ReceiptModel> results = [];
         for(var receipt in receipts){
             if( receipt.searchTag(query) || receipt.searchProduct(query) ||
@@ -80,7 +81,9 @@ class ReceiptManager with ChangeNotifier{
         return results;
     }
 
-    List<Product> productsInRange(double low, double high){
+    List<Product> productsInRange(double? low, double? high){
+        low ??= 0;
+        high ??= double.infinity;
         List<Product> products = [];
         for(var receipt in receipts){
             products+= receipt.productInRange(low, high);
@@ -88,13 +91,28 @@ class ReceiptManager with ChangeNotifier{
         return products;
     }
 
-    List<ReceiptModel> receiptsInDateRange(DateTime from, DateTime to){
+    static List<ReceiptModel> receiptsInDateRange(List<ReceiptModel> receipts, DateTime? from, DateTime? to){
+        if(receipts.isEmpty)return receipts;
+        from ??= DateTime.fromMillisecondsSinceEpoch(0);
+        to ??= DateTime.now();
         List<ReceiptModel> receiptsInRange = [];
         for(var receipt in receipts){
             DateTime receiptPurchaseTime = receipt.purchase_time;
             if(receiptPurchaseTime.isBefore(to) && receiptPurchaseTime.isAfter(from)){
                 receiptsInRange.add(receipt);
             }
+        }
+        return receiptsInRange;
+    }
+
+    static List<ReceiptModel> receiptTotalInRange(List<ReceiptModel> receipts, double? low, double? high){
+        if(receipts.isEmpty)return receipts;
+        List<ReceiptModel> receiptsInRange = [];
+        low ??= 0;
+        high ??= double.infinity;
+        for( var receipt in receipts){
+            double total = receipt.total;
+            if(total>=low && total<=high)receiptsInRange.add(receipt);
         }
         return receiptsInRange;
     }

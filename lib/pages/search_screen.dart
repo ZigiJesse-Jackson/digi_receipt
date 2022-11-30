@@ -43,8 +43,7 @@ class CustomSearchReceiptClass extends SearchDelegate {
     if(query.isEmpty) {
       searchResult = [];
     } else {
-      print(query);
-      searchResult = receiptMgr.searchReceipt(query);
+      searchResult = ReceiptManager.searchReceipt(receiptMgr.receipts, query);
     }
 
 // view a list view with the search result

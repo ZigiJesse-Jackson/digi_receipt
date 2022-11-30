@@ -75,6 +75,7 @@ class ReceiptModel {
 
     bool searchProduct(String query){
         for(var product in _products){
+            print(product.product_name);
             if(product.product_name.toLowerCase().contains(query.toLowerCase()))return true;
         }
         return false;
@@ -89,10 +90,6 @@ class ReceiptModel {
         return products;
     }
 
-    List<ReceiptModel> receiptTotalInRange(double low, double high){
-        List<ReceiptModel> receiptsInRange = [];
 
-        return receiptsInRange;
-    }
 
 }

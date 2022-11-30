@@ -6,7 +6,7 @@ class NumberInput extends StatelessWidget {
     required this.label,
     this.controller,
     this.value,
-    this.onChanged,
+    required this.onChanged,
     this.error,
     this.icon,
     this.allowDecimal = true,
@@ -15,7 +15,7 @@ class NumberInput extends StatelessWidget {
   final TextEditingController? controller;
   final String? value;
   final String label;
-  final Function? onChanged;
+  final Function onChanged;
   final String? error;
   final Widget? icon;
   final bool allowDecimal;
@@ -26,7 +26,7 @@ class NumberInput extends StatelessWidget {
       controller: controller,
       initialValue: value,
       onChanged: (String val){
-        onChanged!();
+        onChanged();
       },
       keyboardType: TextInputType.numberWithOptions(decimal: allowDecimal),
       inputFormatters: <TextInputFormatter>[
@@ -39,7 +39,7 @@ class NumberInput extends StatelessWidget {
       ],
       decoration: InputDecoration(
         border: OutlineInputBorder(),
-        label: Text(label),
+        label: Center(child: Text(label)),
         errorText: error,
         icon: icon,
       ),
