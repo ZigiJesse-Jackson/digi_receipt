@@ -19,14 +19,14 @@ class ReceiptManager with ChangeNotifier{
         // reading receipt information from db
         List<Map<String, Object?>> receipt_list = await db.rawQuery('SELECT * FROM receipt;');
 
-        // parsing and creating receipt objects
-        receipt_list.forEach((Map<String, Object?> rec_row) async {
+        // parsing and creating receipt objects one at a time
+        for (var recRow in receipt_list){
             List<Product> products = [];
             List<String> tags = [];
             // reading receipt products from db
             List<Map> productList = await db.rawQuery('SELECT product.product_id as pid,'
                 ' product_name, product_price, quantity from product, receipt_product'
-                ' where receipt_product.receipt_id = ${rec_row['receipt_id']}  and '
+                ' where receipt_product.receipt_id = ${recRow['receipt_id']}  and '
                 'product.product_id = receipt_product.product_id;');
 
             // parsing and creating list of receipt product objects
@@ -37,34 +37,36 @@ class ReceiptManager with ChangeNotifier{
                     prodRow['quantity']);
                 products.add(p);
             }
-
+            // reading and storing receipt tags from db
             List<Map> tagList = await db.rawQuery('''SELECT tag_name from tag, receipt_tag
-             WHERE receipt_tag.receipt_id = ${rec_row['receipt_id']} ''');
+             WHERE receipt_tag.receipt_id = ${recRow['receipt_id']} ''');
             for (var tagRow in tagList) {
                 String tag = tagRow['tag_name'];
                 tags.add(tag);
             }
 
-
             // initializing and adding receipts to receipt manager
 
             // converting timestamp to date
-            int r_date = rec_row['purchase_time'] as int;
+            print(recRow['purchase_time']);
+            int r_date = recRow['purchase_time'] == null? 0: recRow['purchase_time'] as int;
             DateTime receipt_date = DateTime.fromMillisecondsSinceEpoch(r_date * 1000);
 
             receipts.add(ReceiptModel(
-                rec_row['receipt_id'] as int,
-                rec_row['vendor_name'] as String,
-                rec_row['vendor_address'] as String,
-                rec_row['vendor_phone_number'].toString(),
+                recRow['receipt_id'] as int,
+                recRow['vendor_name'] as String,
+                recRow['vendor_address'] as String,
+                recRow['vendor_phone_number'].toString(),
                 receipt_date,
-                rec_row['receipt_total'] as double,
+                recRow['receipt_total'] as double,
                 products,
                 tags,
                 notifyListeners
             ) );
-            notifyListeners();
-        });
+        }
+        await db.close();
+        notifyListeners();
+
     }
 
     /// Adds all receipts where [query] appears in tags, product names,
@@ -115,6 +117,44 @@ class ReceiptManager with ChangeNotifier{
             if(total>=low && total<=high)receiptsInRange.add(receipt);
         }
         return receiptsInRange;
+    }
+
+    Future<void> insert_Receipt(String filePath, Map<String, dynamic> map) async{
+        Database db = await openDatabase(filePath);
+        int lim = 0;
+        await db.transaction((txn) async {
+            var batch = txn.batch();
+            // Inserting products
+            for(Map<String, dynamic> prod in map['products']){
+                batch.insert("product", prod);
+                lim++;
+            }
+            // Inserting receipt
+            batch.insert("receipt", {"vendor_name":map['vendor'] as String,
+                "vendor_address":map['location'] as String,  "vendor_phone_number": map['phone'] as String,
+                "purchase_time": map['time'] as int, "receipt_total": map['total_price'] as double});
+            await batch.commit();
+        });
+
+
+        // retrieving product ids
+        List<Map<String, Object?>> rowIDs = await db.rawQuery('''SELECT product_id as p_id FROM
+   product ORDER BY product_id DESC LIMIT $lim''');
+        // retrieving receipt id
+        List<Map<String, Object?>> receiptID = await db.rawQuery('''SELECT max(receipt_id) as r_id FROM
+   receipt ''');
+        int receiptId = receiptID[0]['r_id'] as int;
+
+        await db.transaction((txn) async {
+            var batch = txn.batch();
+            for(Map<String, dynamic> row in rowIDs){
+                int productId = row['p_id'] as int;
+                batch.insert("receipt_product", {'receipt_id': receiptId, 'product_id': productId});
+            }
+            await batch.commit();
+        });
+        notifyListeners();
+        await db.close();
     }
 
 }

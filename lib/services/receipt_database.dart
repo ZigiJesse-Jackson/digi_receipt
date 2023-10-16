@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 import '../contants/service_constants.dart';
 
@@ -51,13 +52,11 @@ Future<Database> initDB(String filePath) async {
 
 /// open receipt database if it exists, initialize it otherwise.
 Future<Database> getDatabase() async {
-  String k_path = await getDBPath();
-  if(await databaseExists(k_path)!= false){
-
-    return await openDatabase(k_path);
+  String kPath = await getDBPath();
+  if(await databaseExists(kPath)!= false){
+    return await openDatabase(kPath);
   }
-  print('Database does not exist');
   // create and initialize database if it does not exist
-  var database = await initDB(k_path);
+  var database = await initDB(kPath);
   return database;
 }

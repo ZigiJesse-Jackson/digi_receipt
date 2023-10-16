@@ -1,15 +1,13 @@
-import 'package:digi_receipt/models/receipt_manager.dart';
-import 'package:digi_receipt/models/receipt_model.dart';
+import 'package:digi_receipt/contants/style_constants.dart';
 import 'package:digi_receipt/widgets/number_input_field.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:syncfusion_flutter_datepicker/datepicker.dart';
+import 'dart:async';
 
-import '../widgets/receipt_display.dart';
+import 'package:intl/intl.dart';
 
 class FilterPage extends StatefulWidget {
-  final receipts;
-  const FilterPage({Key? key, required this.receipts}) : super(key: key);
+  final Function filter;
+  const FilterPage({Key? key, required this.filter}) : super(key: key);
 
   @override
   State<FilterPage> createState() => _FilterPageState();
@@ -18,66 +16,35 @@ class FilterPage extends StatefulWidget {
 class _FilterPageState extends State<FilterPage> {
   final TextEditingController _minPriceController = TextEditingController();
   final TextEditingController _maxPriceController = TextEditingController();
-  final TextEditingController _searchQueryController = TextEditingController();
+
   // filter properties
-  DateTime? _begin_date;
   double? _min;
   double? _max;
+  bool selected_begin = false;
+  DateTime? _begin_date;
   DateTime? _end_date;
-  List<ReceiptModel> filtered = [];
-  String? _searchQuery;
-  DateTime? get begin_date => _begin_date;
 
-  set begin_date(DateTime? beginDate) {
-    _begin_date = beginDate;
-  }
-
-  DateTime? get end_date => _end_date;
-
-  set end_date(DateTime? endDate) {
-    _end_date = endDate;
-  }
-
-  void setVal() {
-    setState(() {});
-  }
-
-  void filter(){
+  void setDate(selectedDate, dateToChange) {
     setState(() {
-      filtered.clear();
-      filtered = widget.receipts;
-      // getting text input values if any
-      if(_minPriceController.text.isNotEmpty)_min = double.parse(_minPriceController.text);
-      if(_maxPriceController.text.isNotEmpty)_max = double.parse(_maxPriceController.text);
-      if(_searchQueryController.text.isNotEmpty) {
-        _searchQuery = _searchQueryController.text;
-
-      }
-
-      // filtering by query
-      filtered = ReceiptManager.searchReceipt(filtered, _searchQueryController.text);
-      // filtering by total range
-      filtered = ReceiptManager.receiptTotalInRange(filtered, _min, _max);
-      // filtering by date range
-      filtered = ReceiptManager.receiptsInDateRange(filtered, _begin_date, _end_date);
-
-      _minPriceController.clear();
-      _maxPriceController.clear();
-      _searchQueryController.clear();
-
+      dateToChange = selectedDate;
     });
-
   }
 
-  void _onSelectionChanged(DateRangePickerSelectionChangedArgs args) {
-    begin_date = args.value.startDate;
-    end_date = args.value.endDate;
+  Future<DateTime?> _selectDate(BuildContext context, DateTime initialDate,
+      DateTime firstDate, DateTime lastDate) async {
+    final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: initialDate,
+        firstDate: firstDate,
+        lastDate: lastDate);
+    return picked;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.indigo,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
           onPressed: () {
@@ -92,116 +59,152 @@ class _FilterPageState extends State<FilterPage> {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Receipt Total Range",
-                      style: TextStyle(
-                        color: Colors.black54,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 17,
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 0, horizontal: 16.0),
-                            child: NumberInput(
-                              label: 'Min Total',
-                              controller: _minPriceController,
-                              onChanged: setVal,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: NumberInput(
-                              onChanged: setVal,
-                              label: 'Max Total',
-                              controller: _maxPriceController,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                   ],
-                ),
-                const Text(
-                  "Purchase Date Range",
-                  style: TextStyle(
-                    color: Colors.black54,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 17,
-                  ),
-                ),
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: SfDateRangePicker(
-                    onSelectionChanged: _onSelectionChanged,
-                    selectionMode: DateRangePickerSelectionMode.range,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Text(
+                    "Price Filter",
+                    style: kBigText,
                   ),
                 ),
                 Row(
                   children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 0, horizontal: 16.0),
-                        child: TextField(
-                          controller: _searchQueryController,
-                          decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              label: Center(child: Text("Search term")),),
-                        ),
-                      ),
-                    ),
+                    Flexible(
+                        child: NumberInput(
+                            label: "Min Price",
+                            controller: _minPriceController,
+                            onChanged: () {
+                              _min = double.tryParse(_minPriceController.text);
+                            })),
+                    const Icon(Icons.minimize),
+                    Flexible(
+                        child: NumberInput(
+                            label: "Max Price",
+                            controller: _maxPriceController,
+                            onChanged: () {
+                              _max = double.tryParse(_maxPriceController.text);
+                            }))
                   ],
                 ),
-
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 45,vertical: 0),
-                  child: MaterialButton(onPressed: () {
-
-                    filter();
-                  },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.filter_list_rounded),
-                        Text("Filter Receipts",
-                         style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17,
-                          ),
-                        )
-                      ],
-                    ),
-
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  child: Text(
+                    "Date Filter",
+                    style: kBigText,
                   ),
                 ),
-                filtered.isEmpty? Row(): Container(
-                  height: 500,
-                  margin: EdgeInsets.all(20),
-                  child: ListView(
-                      padding: const EdgeInsets.only(top: 8, bottom: 8),
-                      children: List.generate(filtered.length, (index) {
-                        return ReceiptDisplay(
-                          receipt: filtered[index],
-                        );
-                      })),
+                _begin_date == null
+                    ? OutlinedButton(
+                        onPressed: () async {
+                          _begin_date = await _selectDate(
+                              context,
+                              DateTime.now(),
+                              DateTime(2000),
+                              _end_date ?? DateTime(2100));
+                          setState(() {
+                            _begin_date;
+                          });
+                        },
+                        child: Text(
+                          "From",
+                          style: TextStyle(
+                            fontSize: 18,
+                          ),
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "From: ${DateFormat('yMMMMd').format(_begin_date!)}",
+                            style: TextStyle(
+                              fontSize: 18,
+                            ),
+                          ),
+                          IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  _begin_date = null;
+                                });
+                              },
+                              icon: Icon(Icons.clear))
+                        ],
+                      ),
+                _end_date == null
+                    ? OutlinedButton(
+                        onPressed: () async {
+                          _end_date = await _selectDate(
+                              context,
+                              _begin_date ?? DateTime.now(),
+                              _begin_date ?? DateTime(2000),
+                              DateTime(2100));
+                          setState(() {
+                            _end_date;
+                          });
+                        },
+                        child: Text(
+                          "To",
+                          style: TextStyle(
+                            fontSize: 18,
+                          ),
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "To: ${DateFormat('yMMMMd').format(_end_date!)}",
+                            style: TextStyle(
+                              fontSize: 18,
+                            ),
+                          ),
+                          IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  _end_date = null;
+                                });
+                              },
+                              icon: Icon(Icons.clear))
+                        ],
+                      ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 100),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: Text(
+                            "CANCEL",
+                            style: kBigTextButton,
+                          ),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red)),
+                      SizedBox(
+                        width: 50,
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          widget.filter(_min, _max, _begin_date, _end_date);
+                          Navigator.pop(context);
+                        },
+                        child: Text(
+                          "APPLY",
+                          style: kBigTextButton,
+                        ),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green),
+                      ),
+                    ],
+                  ),
                 )
               ],
             ),
-
           ),
         ),
-
       ),
     );
   }

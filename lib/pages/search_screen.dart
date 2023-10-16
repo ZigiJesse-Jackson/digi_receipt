@@ -1,68 +1,177 @@
-import 'package:digi_receipt/models/receipt_manager.dart';
+import 'package:digi_receipt/contants/style_constants.dart';
 import 'package:digi_receipt/models/receipt_model.dart';
-import 'package:digi_receipt/widgets/receipt_display.dart';
+import 'package:digi_receipt/pages/filter_page.dart';
 import 'package:flutter/material.dart';
+import '../models/receipt_manager.dart';
+import '../widgets/receipt_card.dart';
 
-class CustomSearchReceiptClass extends SearchDelegate {
-  final ReceiptManager receiptMgr;
-  List<ReceiptModel> searchResult = [];
-
-
-  CustomSearchReceiptClass({required this.receiptMgr});
+class SearchPage extends StatefulWidget {
+  final ReceiptManager receiptList;
+  const SearchPage({Key? key, required this.receiptList}) : super(key: key);
 
   @override
-  List<Widget> buildActions(BuildContext context) {
-// this will show clear query button
-    return [
-      IconButton(
-        icon: Icon(Icons.clear),
-        onPressed: () {
-          query = '';
-        },
-      ),
-    ];
+  State<SearchPage> createState() => _SearchPageState();
+}
+
+class _SearchPageState extends State<SearchPage> {
+  String last_query = "";
+  List<ReceiptModel> _queriedResults = [];
+  List<ReceiptModel> _filteredResults = [];
+  TextEditingController controller = TextEditingController();
+  bool toggleIconButton = true;
+  bool filter_applied = false;
+  void clearResults() {
+    setState(() {
+      _queriedResults = [];
+    });
+  }
+  /// clear filters and "unfilter" results
+  void clearFilter() {
+    setState(() {
+      _filteredResults = [];
+      filter_applied = false;
+      _queriedResults =
+          ReceiptManager.searchReceipt(widget.receiptList.receipts, last_query);
+    });
+  }
+  /// set filters on receipt total and purchase date and get results with filters
+  /// applied
+  void filter(double? min, double? max, DateTime? begin, DateTime? end) {
+    setState(() {
+      _filteredResults = ReceiptManager.receiptTotalInRange(
+          widget.receiptList.receipts, min, max);
+      _filteredResults =
+          ReceiptManager.receiptsInDateRange(_filteredResults, begin, end);
+      if (!filter_applied) filter_applied = true;
+
+      getResults();
+    });
+  }
+
+  /// retrieve receipts based on search query and filters if applied
+  void getResults() {
+    setState(() {
+      // if (controller.text.isEmpty) {
+      //   clearResults();
+      //   return;
+      // }
+      if (filter_applied == true) {
+        _queriedResults =
+            ReceiptManager.searchReceipt(_filteredResults, controller.text);
+      } else {
+        _queriedResults = ReceiptManager.searchReceipt(
+            widget.receiptList.receipts, controller.text);
+      }
+      last_query = controller.text;
+    });
   }
 
   @override
-  Widget buildLeading(BuildContext context) {
-// adding a back button to close the search
-    return IconButton(
-      icon: Icon(Icons.arrow_back),
-      onPressed: () {
-        close(context, null);
-      },
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: TextField(
+                  controller: controller,
+                  keyboardType: TextInputType.text,
+                  textInputAction: TextInputAction.search,
+                  decoration: InputDecoration(
+                    suffixIcon: controller.text.isEmpty
+                        ? const Icon(Icons.search)
+                        : IconButton(
+                        onPressed: () {
+                          controller.clear();
+                          toggleIconButton = true;
+                          setState(() {});
+                        },
+                        icon: const Icon(Icons.clear)),
+                    label: Text(
+                      "Search For Receipt",
+                      style: kRegularText,
+                    ),
+                  ),
+                  onChanged: (text) {
+                    if (controller.text.isNotEmpty && toggleIconButton) {
+                      setState(() {
+                        toggleIconButton = false;
+                      });
+                    }
+                  },
+                  onSubmitted: (value) {
+                    setState(() {
+                      getResults();
+                    });
+                  },
+                ),
+              ),
+            ),
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FilterPage(
+                      filter: filter,
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(
+                Icons.tune_outlined,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
+        filter_applied
+            ? Container(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+          decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.black,
+                width: 0.5,
+              ),
+              borderRadius: BorderRadius.circular(20)),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text("Clear Filters"),
+              GestureDetector(
+                onTap: () {
+                  clearFilter();
+                },
+                child: const Icon(
+                  Icons.cancel_rounded,
+                  color: Colors.red,
+                ),
+              )
+            ],
+          ),
+        )
+            : const SizedBox(
+          height: 25,
+        ),
+        Container(
+          child: _queriedResults.isEmpty
+              ? const SizedBox()
+              : Expanded(
+            child: ListView.builder(
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 10, horizontal: 10),
+                  child: ReceiptCard(receipt: _queriedResults[index]),
+                );
+              },
+              itemCount: _queriedResults.length,
+            ),
+          ),
+        )
+      ],
     );
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-//clear the old search list
-    searchResult.clear();
-
-//find the elements that starts with the same query letters if query is not empty.
-    if(query.isEmpty) {
-      searchResult = [];
-    } else {
-      searchResult = ReceiptManager.searchReceipt(receiptMgr.receipts, query);
-    }
-
-// view a list view with the search result
-    return Container(
-      margin: const EdgeInsets.all(20),
-      child: searchResult.isNotEmpty? ListView(
-          padding: const EdgeInsets.only(top: 8, bottom: 8),
-          scrollDirection: Axis.vertical,
-          children: List.generate(searchResult.length, (index) {
-            return ReceiptDisplay(
-              receipt: searchResult[index],
-            );
-          })):Center(child: Text("No results found"),),
-    );
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-// I will add this step as an optional step later
-    return Container();
   }
 }

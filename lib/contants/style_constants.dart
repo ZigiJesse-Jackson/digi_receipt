@@ -49,3 +49,17 @@ TextStyle kTotalDisplay = const TextStyle(
     letterSpacing: 2.5,
     fontSize: 25,
     fontWeight: FontWeight.w500);
+
+TextStyle kRegularText = TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.w500,
+    color: Colors.blueGrey.shade700);
+
+TextStyle kBigText = TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.w500,
+    color: Colors.blueGrey.shade700);
+
+TextStyle kBigTextButton = TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.w500);

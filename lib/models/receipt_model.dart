@@ -33,7 +33,6 @@ class ReceiptModel {
         List<Map<String, Object?>> tagRow = await db.rawQuery('''SELECT COUNT(tag_name) as tags from tag WHERE tag_name ='${tagName.replaceAll("'", "''")}' ''');
         if(tagRow[0]['tags']!=0)return false;
         int tagId = await db.rawInsert('''INSERT INTO tag (tag_name) VALUES ('${tagName.replaceAll("'", "''")}'); ''');
-        print("Tag id in table is:${tagId}");
         await db.rawInsert('''INSERT INTO receipt_tag (receipt_id, tag_id) VALUES (${receipt_id},${tagId})''');
         await db.close();
         tags.add(tagName);
@@ -75,7 +74,6 @@ class ReceiptModel {
 
     bool searchProduct(String query){
         for(var product in _products){
-            print(product.product_name);
             if(product.product_name.toLowerCase().contains(query.toLowerCase()))return true;
         }
         return false;
